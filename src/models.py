@@ -10,7 +10,7 @@ class User(db.Model):
 
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return '<User %r>' % self.email
 
     def serialize(self):
         return {
