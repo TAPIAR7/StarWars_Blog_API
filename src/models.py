@@ -48,9 +48,22 @@ class People(db.Model):
 
 class Favorites(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(250), nullable=False)
-    person = db.Column(db.Boolean, unique=True, default=False)
-    planet = db.Column(db.Boolean, unique=True, default=False)
+    # user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    planet_id = db.Column(db.Integer, db.ForeignKey('planets.id'))
+    planet = db.relationship("Planets", backref=db.backref("Favorites", cascade="all,delete"))
+    # name = db.Column(db.String(250), nullable=False)
+    # person = db.Column(db.Boolean, unique=True, default=False)
+    # planet = db.Column(db.Boolean, unique=True, default=False)
     # poeple_id = Column(Integer, ForeignKey('people.id'))
     # planet_id = Column(Integer, ForeignKey('planets.id'))
-    # user_id = Column(Integer, ForeignKey('user.id'))
+    # idUser = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    def _repr_(self):
+        return '<Favorites %r>' % self.planet_id
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "planet": self.planet.serialize()
+            # do not serialize the password, its a security breach
+        }

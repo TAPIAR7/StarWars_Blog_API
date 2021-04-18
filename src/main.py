@@ -67,8 +67,8 @@ def get_one_planet(position):
 # Favorites list
 @app.route('/favorites', methods=['GET'])
 def get_favorites():
-    planeta = Favorites.query.all()
-    request = list(map(lambda planets:planets.serialize(),planets))
+    favorites = Favorites.query.all()
+    request = list(map(lambda favorite:favorite.serialize(),favorites))
     return jsonify(request), 200
 
 # Create a route to authenticate your users and return JWTs. The
