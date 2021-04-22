@@ -33,7 +33,11 @@ class Planets(db.Model):
         return {
             "id": self.id,
             "name": self.name,
+            "climate": self.climate,
+            "population": self.population,
             "rotation_period": self.rotation_period,
+            "orbital_period": self.orbital_period,
+            "diameter": self.diameter
             # do not serialize the password, its a security breach
         }
 
@@ -46,24 +50,41 @@ class People(db.Model):
     skin_color = db.Column(db.String(250), nullable=False)
     eye_color = db.Column(db.String(250), nullable=False)
 
-class Favorites(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    # user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    planet_id = db.Column(db.Integer, db.ForeignKey('planets.id'))
-    planet = db.relationship("Planets", backref=db.backref("Favorites", cascade="all,delete"))
-    # name = db.Column(db.String(250), nullable=False)
-    # person = db.Column(db.Boolean, unique=True, default=False)
-    # planet = db.Column(db.Boolean, unique=True, default=False)
-    # poeple_id = Column(Integer, ForeignKey('people.id'))
-    # planet_id = Column(Integer, ForeignKey('planets.id'))
-    # idUser = db.Column(db.Integer, db.ForeignKey('user.id'))
-
     def _repr_(self):
-        return '<Favorites %r>' % self.planet_id
+        return '<People %r>' % self.name
 
     def serialize(self):
         return {
             "id": self.id,
-            "planet": self.planet.serialize()
+            "name": self.name,
+            "birth_year": self.birth_year,
+            "gender": self.gender,
+            "height": self.height,
+            "skin_color": self.skin_color,
+            "eye_color": self.eye_color
+            # do not serialize the password, its a security breach
+        }
+
+class Favorites(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship("User", backref=db.backref("Favorites", cascade="all,delete"))
+    planet_id = db.Column(db.Integer, db.ForeignKey('planets.id'))
+    planet = db.relationship("Planets", backref=db.backref("Favorites", cascade="all,delete"))
+    people_id = db.Column(db.Integer, db.ForeignKey('people.id'))
+    person = db.relationship("People", backref=db.backref("Favorites", cascade="all,delete"))
+
+    def _repr_(self):
+        return '<Favorites %r>' % self.id
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "planet_id": self.planet_id,
+            "people_id": self.people_id
+            # "user": self.user.serialize(),
+            # "planet": self.planet.serialize(),
+            # "person": self.person.serialize()
             # do not serialize the password, its a security breach
         }
