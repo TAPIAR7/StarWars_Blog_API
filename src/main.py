@@ -49,6 +49,16 @@ def get_users():
 
     return jsonify(request), 200
 
+@app.route('/user/<int:position>', methods=['GET'])
+def get_one_user(position):
+    user = User.query.filter_by(id=position)
+    request = list(map(lambda user:user.serialize(),user))
+    
+    # Verify if user exist
+    if not request:
+        raise APIException('User not found', status_code=404)
+    return jsonify(request), 200
+
 # Planets list
 @app.route('/planets', methods=['GET'])
 def get_planets():
@@ -61,6 +71,10 @@ def get_planets():
 def get_one_planet(position):
     planet = Planets.query.filter_by(id=position)
     request = list(map(lambda planet:planet.serialize(),planet))
+
+    # Verify if planet exist
+    if not request:
+        raise APIException('Planet not found', status_code=404)
     return jsonify(request), 200
 
 # People list
@@ -75,6 +89,21 @@ def get_people():
 def get_one_person(position):
     person = People.query.filter_by(id=position)
     request = list(map(lambda person:person.serialize(),person))
+
+    # Verify if person exist
+    if not request:
+        raise APIException('Character not found', status_code=404)
+    return jsonify(request), 200
+
+# Get all the favorites of one user
+@app.route('/user/<int:position>/favorites', methods=['GET'])
+def get_one_user_favorites(position):
+    user = Favorites.query.filter_by(user_id=position)
+    request = list(map(lambda user:user.serialize(),user))
+    
+    # Verify if user exist
+    if not request:
+        raise APIException('User not found', status_code=404)
     return jsonify(request), 200
 
 # Favorites list
@@ -84,13 +113,24 @@ def get_favorites():
     request = list(map(lambda favorite:favorite.serialize(),favorites))
     return jsonify(request), 200
 
-# Add a favorite
-@app.route('/favorites', methods=['POST'])
-def add_new_favorite():
+# Get one favorite
+@app.route('/favorites/<int:position>', methods=['GET'])
+def get_one_favorite(position):
+    favorite = Favorites.query.filter_by(id=position)
+    request = list(map(lambda favorite:favorite.serialize(),favorite))
+    
+    # Verify if a favorite exist
+    if not request:
+        raise APIException('Favorite not found', status_code=404)
+    return jsonify(request), 200
+
+# Add a favorite requested method
+@app.route('/user/<int:position>/favorites', methods=['POST'])
+def add_new_favorite_by_user(position):
     # Collect data
     planet_idPostIncoming = request.json.get("planet_id", None)
     people_idPostIncoming = request.json.get("people_id", None)
-    user_idPostIncoming = request.json.get("user_id", None)
+    user_idPostIncoming = position
 
     # Validate data
 
@@ -121,7 +161,7 @@ def add_new_favorite():
     # Verify if favorite already exist
     favorite_exist = Favorites.query.filter_by(user_id=user_idPostIncoming, planet_id=planet_idPostIncoming, people_id=people_idPostIncoming).first()
     if favorite_exist is not None:
-        raise APIException('Favorite already exist.', status_code=404)
+        raise APIException('Favorite already exists.', status_code=404)
 
     # Create instance to the model
     newFavorite = Favorites(planet_id = planet_idPostIncoming, people_id = people_idPostIncoming, user_id = user_idPostIncoming)
@@ -130,6 +170,53 @@ def add_new_favorite():
     db.session.add(newFavorite)
     db.session.commit()
     return jsonify(newFavorite.serialize()), 200
+
+# Add a favorite first method
+# @app.route('/favorites', methods=['POST'])
+# def add_new_favorite():
+#     # Collect data
+#     planet_idPostIncoming = request.json.get("planet_id", None)
+#     people_idPostIncoming = request.json.get("people_id", None)
+#     user_idPostIncoming = request.json.get("user_id", None)
+
+#     # Validate data
+
+#     # Validate if user exist
+#     if user_idPostIncoming is None:
+#         raise APIException('User not found', status_code=404)
+
+#     # Validate if planet and people id are both defined. Just can be define one.
+#     if (planet_idPostIncoming is not None) and (people_idPostIncoming is not None):
+#         raise APIException('Data given is invalid', status_code=404)
+
+#     # Validate if planet and people id are both None.
+#     if (planet_idPostIncoming is None) and (people_idPostIncoming is None):
+#         raise APIException('Data given is invalid', status_code=404)
+
+#     if planet_idPostIncoming != people_idPostIncoming:
+#         # Validate if people id exists.
+#         if planet_idPostIncoming is None:
+#             if people_idPostIncoming is None:
+#                 raise APIException('Character not found', status_code=404)
+#         # Validate if planet id exists.
+#         if people_idPostIncoming is None:
+#             if planet_idPostIncoming is None:
+#                 raise APIException('Planet not found', status_code=404)
+#     else:
+#         raise APIException('Data given is invalid', status_code=404)
+    
+#     # Verify if favorite already exist
+#     favorite_exist = Favorites.query.filter_by(user_id=user_idPostIncoming, planet_id=planet_idPostIncoming, people_id=people_idPostIncoming).first()
+#     if favorite_exist is not None:
+#         raise APIException('Favorite already exists.', status_code=404)
+
+#     # Create instance to the model
+#     newFavorite = Favorites(planet_id = planet_idPostIncoming, people_id = people_idPostIncoming, user_id = user_idPostIncoming)
+    
+#     # Add it to database session
+#     db.session.add(newFavorite)
+#     db.session.commit()
+#     return jsonify(newFavorite.serialize()), 200
 
 # Delete a favorite
 @app.route('/favorites/<int:position>', methods=['DELETE'])
